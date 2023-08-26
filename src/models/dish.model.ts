@@ -1,4 +1,12 @@
-import { Table, Column, Model, DataType, Unique } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  Unique,
+  BelongsTo,
+} from 'sequelize-typescript';
+import { User } from './user.model';
 
 @Table
 export class Dish extends Model {
@@ -18,4 +26,16 @@ export class Dish extends Model {
 
   @Column(DataType.JSON)
   rating: number;
+
+  @Column
+  createdBy: number;
+
+  @BelongsTo(() => User, 'createdBy')
+  createdByUser: User;
+
+  @Column
+  updatedBy: number;
+
+  @BelongsTo(() => User, 'updatedBy')
+  updatedByUser: User;
 }

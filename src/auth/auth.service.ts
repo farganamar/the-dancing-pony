@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/user.model';
@@ -13,9 +13,9 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<any> {
     const user = await this.userModel.findOne({ where: { username } });
-
-    if (!user || !this.comparePasswords(user, password)) {
-      throw new Error('Invalid Credentials');
+    const comparePass = await this.comparePasswords(user, password);
+    if (!user || !comparePass) {
+      throw new HttpException('Invalid Credentials', HttpStatus.BAD_REQUEST);
     }
 
     const payload = { username: user.username, sub: user.id };

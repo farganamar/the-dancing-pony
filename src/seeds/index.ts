@@ -19,7 +19,7 @@ dotenv.config();
   // Initialize models with the Sequelize instance
   sequelize.addModels([User]);
 
-  await sequelize.sync({ force: true }); // This will drop the existing tables and re-create them
+  // await sequelize.sync({ force: true }); // This will drop the existing tables and re-create them
 
   try {
     const hashedPassword = await bcrypt.hash('password123', 10);
