@@ -2,6 +2,7 @@ import * as bcrypt from 'bcrypt';
 import { Sequelize } from 'sequelize-typescript';
 import { User } from '../models/user.model';
 import * as dotenv from 'dotenv';
+import { UserRating } from '../models/user-rating.model';
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ dotenv.config();
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
-    models: [User],
+    models: [User, UserRating],
   });
 
   // Initialize models with the Sequelize instance

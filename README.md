@@ -20,6 +20,11 @@ Library that i used:
 $ npm install
 ```
 
+
+## Seed users data
+```bash
+$ npm run seed
+```
 ## API Documentation
 To access API Documentation go to this link (http://localhost:3000/api-docs/) after running the APP 
 
