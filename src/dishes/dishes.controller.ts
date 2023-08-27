@@ -14,20 +14,37 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { DishesService } from './dishes.service';
-// import { AuthGuard } from 'src/auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateDishDto } from './dto/create-dish.dto';
 import { UpdateDishDto } from './dto/update-dish.dto';
 import { RateDishDto } from './dto/rate-dish.dto';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Dish } from 'src/models/dish.model';
 
+@ApiBearerAuth()
+@ApiTags('dishes')
 @Controller('dishes')
 @UseGuards(ThrottlerGuard)
 export class DishesController {
   constructor(private readonly dishesService: DishesService) {}
 
-  // @UseGuards(AuthGuard)
   @Post()
+  @ApiOperation({ summary: 'Create a new dish' })
+  @ApiBody({ type: CreateDishDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Dish created successfully',
+    type: Dish,
+  })
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createDishDto: CreateDishDto,
@@ -57,6 +74,13 @@ export class DishesController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Update a dish by ID' })
+  @ApiBody({ type: UpdateDishDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Dish updated successfully',
+    type: Dish,
+  })
   async update(
     @Param('id') id: number,
     @Body() updateDishDto: UpdateDishDto,
@@ -85,6 +109,13 @@ export class DishesController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Update a dish by ID' })
+  @ApiParam({ name: 'id', description: 'ID of the dish', type: Number })
+  @ApiResponse({
+    status: 200,
+    description: 'Dish deleted successfully',
+    type: Dish,
+  })
   async delete(@Param('id') id: number, @Request() req, @Response() res) {
     try {
       const user = req.user;
@@ -104,6 +135,10 @@ export class DishesController {
   }
 
   @Get(':id')
+  @Get(':id')
+  @ApiOperation({ summary: 'Get dish by ID' })
+  @ApiParam({ name: 'id', description: 'ID of the dish', type: Number })
+  @ApiResponse({ status: 200, description: 'Dish found', type: Dish })
   async detail(@Param('id') id: number, @Response() res) {
     try {
       const dish = await this.dishesService.findOne(id);
@@ -129,6 +164,31 @@ export class DishesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all dishes' })
+  @ApiQuery({
+    name: 'name',
+    description: 'Filter dishes by name',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    required: false,
+    type: Number,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Items per page',
+    required: false,
+    type: Number,
+    example: 10,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dishes fetched successfully',
+    type: [Dish],
+  })
   async getAll(
     @Response() res,
     @Query('name') name: string, // Query parameter for filtering by name
@@ -162,6 +222,13 @@ export class DishesController {
   }
 
   @Post(':id/rate')
+  @ApiOperation({ summary: 'Rate a dish' })
+  @ApiBody({ type: RateDishDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Dish rated successfully',
+    type: Dish,
+  })
   async rateDish(
     @Param('id') id: number,
     @Body() rateDishDto: RateDishDto,
