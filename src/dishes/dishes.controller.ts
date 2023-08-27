@@ -22,13 +22,14 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Dish } from 'src/models/dish.model';
+import { Dish } from '../models/dish.model';
 
 @ApiBearerAuth()
 @ApiTags('dishes')
@@ -45,6 +46,7 @@ export class DishesController {
     description: 'Dish created successfully',
     type: Dish,
   })
+  @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createDishDto: CreateDishDto,

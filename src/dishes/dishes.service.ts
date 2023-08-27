@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { createWriteStream } from 'fs';
+import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { Dish } from '../models/dish.model';
 import { CreateDishDto } from './dto/create-dish.dto';
 import { Sequelize } from 'sequelize-typescript';
@@ -35,10 +35,14 @@ export class DishesService {
 
       // Save the image to a temporary folder
       if (![null, undefined].includes(image)) {
-        const imageStream = createWriteStream(`./temp/${image.originalname}`);
+        const dir = './temp/';
+        if (!existsSync(dir)) {
+          mkdirSync(dir);
+        }
+        const imageStream = createWriteStream(`${dir}${image.originalname}`);
         imageStream.write(image.buffer);
 
-        dish.image = `./temp/${image.originalname}`; // Store the image path in the database
+        dish.image = `${dir}${image.originalname}`; // Store the image path in the database
       }
 
       const createdDish = await dish.save({ transaction: t });

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsDecimal } from 'class-validator';
 
 export class CreateDishDto {
   @ApiProperty()
@@ -14,6 +14,13 @@ export class CreateDishDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
+  @IsDecimal()
   price: number;
+
+  @ApiProperty({
+    description: 'Attachments',
+    type: 'file',
+    format: 'binary',
+  })
+  image?: any;
 }
