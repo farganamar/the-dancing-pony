@@ -10,6 +10,7 @@ import {
   Request,
   Response,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { DishesService } from './dishes.service';
@@ -17,8 +18,11 @@ import { DishesService } from './dishes.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateDishDto } from './dto/create-dish.dto';
 import { UpdateDishDto } from './dto/update-dish.dto';
+import { RateDishDto } from './dto/rate-dish.dto';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('dishes')
+@UseGuards(ThrottlerGuard)
 export class DishesController {
   constructor(private readonly dishesService: DishesService) {}
 
@@ -152,6 +156,40 @@ export class DishesController {
       res.status(500).json({
         status: false,
         message: 'Error fetching dishes',
+        error: error.message,
+      });
+    }
+  }
+
+  @Post(':id/rate')
+  async rateDish(
+    @Param('id') id: number,
+    @Body() rateDishDto: RateDishDto,
+    @Request() req,
+    @Response() res,
+  ) {
+    try {
+      const user = req.user;
+      const hasRated = await this.dishesService.hasUserRatedDish(id, user.sub);
+      if (hasRated) {
+        throw new Error('You have already rated this dish');
+      }
+
+      const updatedDish = await this.dishesService.rateDish(
+        id,
+        user.sub,
+        rateDishDto.rating,
+      );
+
+      res.json({
+        status: true,
+        message: 'Dish rated successfully',
+        data: updatedDish,
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: 'Error rating dish',
         error: error.message,
       });
     }

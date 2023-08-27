@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { createWriteStream } from 'fs';
-import { Dish } from 'src/models/dish.model';
+import { Dish } from '../models/dish.model';
 import { CreateDishDto } from './dto/create-dish.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { UpdateDishDto } from './dto/update-dish.dto';
+import { UserRating } from '../models/user-rating.model';
+import { User } from '../models/user.model';
 
 @Injectable()
 export class DishesService {
@@ -12,6 +14,10 @@ export class DishesService {
     @InjectModel(Dish)
     private dishModel: typeof Dish,
     private sequelize: Sequelize,
+    @InjectModel(UserRating)
+    private userRatingModel: typeof UserRating,
+    @InjectModel(User)
+    private userModel: typeof User,
   ) {}
 
   async create(
@@ -118,5 +124,57 @@ export class DishesService {
     ]);
 
     return { dishes, total };
+  }
+
+  async rateDish(
+    dishId: number,
+    userId: number,
+    rating: number,
+  ): Promise<Dish> {
+    // Retrieve the user's username
+    const user = await this.userModel.findByPk(userId);
+    if (user.username === 'Sméagol') {
+      throw new Error('User "Sméagol" is not allowed to rate dishes');
+    }
+
+    const userRating = await this.userRatingModel.findOne({
+      where: { dishId, userId },
+    });
+
+    if (userRating) {
+      throw new Error('You have already rated this dish');
+    }
+
+    const dish = await this.dishModel.findByPk(dishId);
+
+    if (!dish) {
+      throw new Error('Dish not found');
+    }
+
+    const transaction = await this.dishModel.sequelize.transaction();
+    try {
+      dish.ratings += 1; // Increase the total ratings count
+
+      await dish.save({ transaction });
+
+      await this.userRatingModel.create(
+        { dishId, userId, rating },
+        { transaction },
+      );
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+
+    return dish;
+  }
+
+  async hasUserRatedDish(dishId: number, userId: number): Promise<boolean> {
+    const userRating = await this.userRatingModel.findOne({
+      where: { dishId, userId },
+    });
+    return !!userRating;
   }
 }

@@ -5,8 +5,10 @@ import {
   DataType,
   Unique,
   BelongsTo,
+  HasMany,
 } from 'sequelize-typescript';
 import { User } from './user.model';
+import { UserRating } from './user-rating.model';
 
 @Table
 export class Dish extends Model {
@@ -24,8 +26,8 @@ export class Dish extends Model {
   @Column(DataType.FLOAT)
   price: number;
 
-  @Column(DataType.JSON)
-  rating: number;
+  @Column(DataType.FLOAT) // Default value for ratings is 0
+  ratings: number;
 
   @Column
   createdBy: number;
@@ -38,4 +40,7 @@ export class Dish extends Model {
 
   @BelongsTo(() => User, 'updatedBy')
   updatedByUser: User;
+
+  @HasMany(() => UserRating)
+  userRatings: UserRating[];
 }
